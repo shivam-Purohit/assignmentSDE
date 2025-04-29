@@ -1,0 +1,18 @@
+# Ignore Python virtual environment
+venv/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# SQLite DB (if you want to ignore it)
+*.db
+
+# Environment and config
+.env
+.env.*
+
+# VS Code and other IDE settings
+.vscode/
+.idea/
