@@ -1,81 +1,108 @@
+from datetime import date, datetime
 from pydantic import BaseModel
 from typing import List, Optional
 
-class HotelBase(BaseModel):
-    name: str
-    address: str
-    price: float
+class UserBase(BaseModel):
+    email: str
+    full_name: Optional[str]
 
-class HotelCreate(HotelBase):
-    pass
+class UserCreate(UserBase):
+    password: str
 
-class Hotel(HotelBase):
+class User(UserBase):
     id: int
-    day_id: int
+    is_active: bool
+    created_at: datetime
 
     class Config:
         orm_mode = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
 
 class ActivityBase(BaseModel):
     name: str
-    description: str
-    price: float
-
-class ActivityCreate(ActivityBase):
-    pass
+    description: Optional[str]
+    duration_hours: Optional[float]
+    category: Optional[str]
+    cost: Optional[float]  # ✅ NEW
 
 class Activity(ActivityBase):
-    id: int
-    day_id: int
-
-    class Config:
-        orm_mode = True
+    pass
 
 class TransferBase(BaseModel):
     type: str
-    from_location: str
-    to_location: str
-    price: float
-
-class TransferCreate(TransferBase):
-    pass
+    departure_time: datetime
+    arrival_time: datetime
+    duration_minutes: int
+    vehicle_type: str
 
 class Transfer(TransferBase):
-    id: int
-    day_id: int
+    pass
 
-    class Config:
-        orm_mode = True
+class HotelBase(BaseModel):
+    name: str
+    address: Optional[str]
+    rating: Optional[float]
+    checkin_time: datetime
+    checkout_time: datetime
+    cost: Optional[float]  # ✅ NEW
+
+class Hotel(HotelBase):
+    pass
 
 class DayBase(BaseModel):
-    itinerary_id: int
     day_number: int
-    date: str
-
-class DayCreate(DayBase):
-    hotels: List[HotelCreate] = []
-    activities: List[ActivityCreate] = []
-    transfers: List[TransferCreate] = []
+    date: Optional[date]
+    hotels: List[Hotel] = []
+    transfers: List[Transfer] = []
+    activities: List[Activity] = []
 
 class Day(DayBase):
-    id: int
-    hotels: List[Hotel] = []
-    activities: List[Activity] = []
-    transfers: List[Transfer] = []
-
-    class Config:
-        orm_mode = True
+    pass
 
 class ItineraryBase(BaseModel):
     name: str
-    duration: int  # Duration in nights
+    duration: int
+    region: str
+    description: Optional[str]
 
 class ItineraryCreate(ItineraryBase):
-    days: List[DayCreate] = []
+    days: List[DayBase]
 
-class Itinerary(ItineraryBase):
+class ReviewBase(BaseModel):
+    rating: float
+    comment: Optional[str]
+
+class ReviewCreate(ReviewBase):
+    itinerary_id: int
+
+class Review(ReviewBase):
     id: int
-    days: List[Day] = []
+    user: User
+    created_at: datetime
 
     class Config:
         orm_mode = True
+
+class Itinerary(ItineraryBase):
+    id: int
+    popularity: int
+    is_recommended: bool
+    created_at: datetime
+    days: List[Day]
+    reviews: List[Review] = []
+
+    # ✅ NEW: Derived fields for AI-friendly output
+    overall_cost: Optional[float] = 0.0
+    avg_rating: Optional[float] = 0.0
+
+    class Config:
+        orm_mode = True
+
+# Fix forward reference
+Itinerary.update_forward_refs()
