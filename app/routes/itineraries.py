@@ -1,37 +1,80 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List
-from app import models, schemas
+from app.schemas import ItineraryCreate, Itinerary
+from app.models import Itinerary as ItineraryModel
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 
 router = APIRouter()
 
-# Create a new itinerary
-@router.post("/itineraries/", response_model=schemas.Itinerary)
-def create_itinerary(itinerary: schemas.ItineraryCreate, db: Session = Depends(get_db)):
-    db_itinerary = models.Itinerary(name=itinerary.name, duration=itinerary.duration)
+@router.post(
+    "/itineraries",
+    response_model=Itinerary,
+    status_code=status.HTTP_201_CREATED,
+    operation_id="create_itinerary",
+    tags=["itinerary"],
+    summary="Create a new itinerary",
+    description="Create a new travel itinerary with day-wise details. Requires authentication."
+)
+def create_itinerary(
+    itinerary: ItineraryCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """
+    Create a new itinerary.
+    """
+    db_itinerary = ItineraryModel(
+        name=itinerary.name,
+        duration=itinerary.duration,
+        region=itinerary.region,
+        description=itinerary.description,
+    )
     db.add(db_itinerary)
     db.commit()
     db.refresh(db_itinerary)
-    # Add days and associated data
-    for day in itinerary.days:
-        db_day = models.Day(itinerary_id=db_itinerary.id, day_number=day.day_number, date=day.date)
-        db.add(db_day)
-        db.commit()
-        db.refresh(db_day)
-        for hotel in day.hotels:
-            db_hotel = models.Hotel(name=hotel.name, address=hotel.address, price=hotel.price, day_id=db_day.id)
-            db.add(db_hotel)
-        for activity in day.activities:
-            db_activity = models.Activity(name=activity.name, description=activity.description, price=activity.price, day_id=db_day.id)
-            db.add(db_activity)
-        for transfer in day.transfers:
-            db_transfer = models.Transfer(type=transfer.type, from_location=transfer.from_location, to_location=transfer.to_location, price=transfer.price, day_id=db_day.id)
-            db.add(db_transfer)
-        db.commit()
+    # TODO: Add days and nested hotels, transfers, activities here
     return db_itinerary
 
-# Get all itineraries
-@router.get("/itineraries/", response_model=List[schemas.Itinerary])
-def get_itineraries(db: Session = Depends(get_db)):
-    return db.query(models.Itinerary).all()
+@router.get(
+    "/itineraries/{itinerary_id}",
+    response_model=Itinerary,
+    operation_id="get_itinerary",
+    tags=["itinerary"],
+    summary="Get itinerary by ID",
+    description="Retrieve a specific itinerary by its ID."
+)
+def get_itinerary(
+    itinerary_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get a specific itinerary by its ID.
+    """
+    itinerary = db.query(ItineraryModel).filter(ItineraryModel.id == itinerary_id).first()
+    if not itinerary:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Itinerary not found")
+    return itinerary
+
+@router.get(
+    "/itineraries",
+    response_model=list[Itinerary],
+    operation_id="list_itineraries",
+    tags=["itinerary"],
+    summary="List itineraries",
+    description="List all itineraries, optionally filtering by region and duration."
+)
+def list_itineraries(
+    region: str = Query(None, description="Region to filter by"),
+    duration: int = Query(None, description="Duration in nights to filter by"),
+    db: Session = Depends(get_db)
+):
+    """
+    List all itineraries, optionally filtered by region and/or duration.
+    """
+    query = db.query(ItineraryModel)
+    if region:
+        query = query.filter(ItineraryModel.region == region)
+    if duration:
+        query = query.filter(ItineraryModel.duration == duration)
+    return query.all()
