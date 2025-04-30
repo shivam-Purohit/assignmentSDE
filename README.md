@@ -92,7 +92,13 @@ Add this config to the claude json config which can be found in developer settin
 }
 
   ```
-You will be able to use the api calls as tools in the claude chat
+You will be able to use the api calls as tools in the claude chat.
+![Screenshot (178)](https://github.com/user-attachments/assets/43266e1e-6956-4493-a7c6-233d74388e04)
+
+Then you can ask questions and it will use the available tools to fetch data and curate a custom answer
+![Screenshot (180)](https://github.com/user-attachments/assets/5973ea73-e576-45ad-b5e9-b1c001bdd91d)
+
+
 
 
 ### Supported MCP Clients
