@@ -35,3 +35,7 @@ __pycache__/
 # VS Code and other IDE settings
 .vscode/
 .idea/
+
+# node modules
+node_modules
+frontend/node_modules
