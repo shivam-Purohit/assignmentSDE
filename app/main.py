@@ -21,7 +21,7 @@ app.include_router(mcp.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development only! Restrict this in production
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
