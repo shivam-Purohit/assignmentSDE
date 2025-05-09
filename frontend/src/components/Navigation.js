@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
+import { useSelector } from 'react-redux'
 
 const pages = ['Products', 'Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -20,7 +21,10 @@ function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
     // 👇 Add user state
-    const [user, setUser] = React.useState(false); // false for now; later will be set from API
+    const userState = useSelector((state) => state.user.isLoggedIn)
+    console.log(`userstate is ${userState}`)
+    // const [user, setUser] = React.useState(false); 
+    // false for now; later will be set from API
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -127,7 +131,7 @@ function ResponsiveAppBar() {
           {/* 👇 Conditionally render menu only if user is logged in */}
 
           <Box sx={{ flexGrow: 0 }}>
-          {user ? (
+          {userState ? (
             <>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

@@ -63,7 +63,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export default function SignIn(props) {
+export default function SignUp(props) {
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
@@ -75,9 +75,7 @@ export default function SignIn(props) {
   const handleClickOpen = () => {
     setOpen(true);
   };
-  const handleClickSignUp = () => {
-    navigate("/signup")
-  };
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -92,39 +90,44 @@ export default function SignIn(props) {
     const data = new FormData(event.currentTarget);
     const email = data.get('email');
     const password = data.get('password');
-    const formBody = new URLSearchParams();
-    formBody.append("username", email);
-    formBody.append("password", password);
+    const username = data.get('username')
+    const payload = {
+        email: email,
+        password: password,
+        full_name: username,
+      };
 
     console.log({
       email: email,
       password: password,
+      username: username,
     });
     try {
-        const response = await fetch("http://localhost:8000/token", {
+        const response = await fetch("http://localhost:8000/register", {
             method:"POST",
             headers: {
-                "Content-Type":"application/x-www-form-urlencoded",
+                "Content-Type":"application/json",
               },
-            body: formBody.toString()
+            body: JSON.stringify(payload)
         });
         if (response.ok) {
-            // ✅ Login successful
+            // ✅ Resgister successful
             // Optional: Redirect to home/dashboard
-            console.log("success")
-            const { access_token } = await response.json();
-            localStorage.setItem("access_token", access_token);
+            console.log("success register")
+            // const { access_token } = await response.json();
+            // localStorage.setItem("access_token", access_token);
             dispatch(markLogged());
+            console.log(response.json())
             navigate("/");
           } else {
             // ❌ Login failed
             const result = await response.json();
             console.log("failed")
-            alert(result.detail || "Login failed");
+            alert(result.detail || "Register failed");
           }
 
     }catch(error){
-        console.error("Login error:", error);
+        console.error("Register error:", error);
         alert("An error occurred while logging in.");
     }
 
@@ -170,7 +173,7 @@ export default function SignIn(props) {
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Sign in
+            Sign up
           </Typography>
           <Box
             component="form"
@@ -201,6 +204,23 @@ export default function SignIn(props) {
               />
             </FormControl>
             <FormControl>
+              <FormLabel htmlFor="username">Username</FormLabel>
+              <TextField
+                error={emailError}
+                helperText={emailErrorMessage}
+                id="username"
+                type="username"
+                name="username"
+                placeholder="your name"
+                autoComplete="username"
+                autoFocus
+                required
+                fullWidth
+                variant="outlined"
+                color={emailError ? 'error' : 'primary'}
+              />
+              </FormControl>
+            <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
                 error={passwordError}
@@ -217,28 +237,28 @@ export default function SignIn(props) {
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
-            <FormControlLabel
+            {/* <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
-            />
-            <ForgotPassword open={open} handleClose={handleClose} />
+            /> */}
+            {/* <ForgotPassword open={open} handleClose={handleClose} /> */}
             <Button
               type="submit"
               fullWidth
               variant="contained"
               onClick={validateInputs}
             >
-              Sign in
+              Sign up
             </Button>
-            <Link
+            {/* <Link
               component="button"
               type="button"
-              onClick={handleClickSignUp}
+              onClick={handleClickOpen}
               variant="body2"
               sx={{ alignSelf: 'center' }}
             >
               Forgot your password?
-            </Link>
+            </Link> */}
           </Box>
           <Divider>or</Divider>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -258,16 +278,16 @@ export default function SignIn(props) {
             >
               Sign in with Facebook
             </Button>
-            <Typography sx={{ textAlign: 'center' }}>
+            {/* <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
-              <Button
-                onClick={handleClickSignUp}
+              <Link
+                href="/material-ui/getting-started/templates/sign-in/"
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
               >
                 Sign up
-              </Button>
-            </Typography>
+              </Link>
+            </Typography> */}
           </Box>
         </Card>
       </SignInContainer>
